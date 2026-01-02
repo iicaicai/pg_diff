@@ -201,9 +201,14 @@ class DataVerifier:
         
         try:
             # Pre-flight check: verify tool existence without creating file
-            # For docker: docker exec container pg_dump --version
-            # For local: pg_dump --version
-            check_cmd = cmd[:-2] + ["--version"] if not self.use_local else ["pg_dump", "--version"]
+            check_cmd = []
+            if self.use_local:
+                print(f"Mode: Local (pg_dump)")
+                check_cmd = ["pg_dump", "--version"]
+            else:
+                print(f"Mode: Docker (container: {self.container_name})")
+                check_cmd = ["docker", "exec", self.container_name, "pg_dump", "--version"]
+
             try:
                 subprocess.check_call(check_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except (subprocess.CalledProcessError, FileNotFoundError):
