@@ -34,40 +34,54 @@ pip install -r requirements.txt
 在执行数据库升级之前，运行此命令进行数据备份和状态记录。
 
 ```bash
-python3 pg_diff_tool.py backup --db-name <database_name> --db-url <connection_string> [--threads N]
+python3 pg_diff_tool.py backup --db-name <database_name> [OPTIONS]
 ```
 
 **参数说明**:
-*   `--db-name`: (必填) 需要备份的数据库名称 (例如: `logto`, `test`)。
-*   `--db-url`: (可选) 数据库连接字符串，默认为 `postgres:caiLL2747@127.0.0.1:5432`。
-*   `--threads`: (可选) 并行扫描的线程数，默认为 4。对于包含上千张表的数据库，建议适当调大此值（如 10 或 20）以加快扫描速度。
-*   `--dump-file`: (可选) 指定 SQL 备份文件的名称。
-*   `--skip-dump`: (可选) 如果只需要统计行数而不需要物理备份，可添加此参数。
+
+*   **基础参数**:
+    *   `--db-name`: (必填) 数据库名称 (例如: `logto`).
+    *   `--db-url`: (可选) 连接字符串或 DSN。支持 URI (如 `postgresql://user:pass@host:port`) 或键值对 (如 `host=127.0.0.1 user=root`)。默认优先读取环境变量 `PG_DB_URL`，否则默认为 `postgresql://127.0.0.1:5432`。
+
+*   **运行模式 (Docker vs Local)**:
+    *   `--container-name`: (可选) Docker 容器名称，默认为 `docker-tmp-postgres-1`。
+    *   `--local`: (可选) 开启此开关后，将直接调用宿主机的 `pg_dump`，而不使用 Docker exec。
+    *   `--db-user`: (可选) 指定用于备份的用户名 (默认为 `postgres`)。
+
+*   **性能与输出**:
+    *   `--threads`: (可选) 并行扫描线程数，默认为 4。
+    *   `--dump-file`: (可选) 指定 SQL 备份文件名。
+    *   `--skip-dump`: (可选) 跳过物理备份，仅统计数据。
 
 **示例**:
-```bash
-python3 pg_diff_tool.py backup --db-name logto --threads 8
-```
-执行后，将生成：
-1.  `.sql` 备份文件 (例如 `logto_backup_20240101_120000.sql`)
-2.  `migration_snapshot.json` (数据行数及主键快照)
+
+1.  **Docker 模式 (默认)**:
+    ```bash
+    python3 pg_diff_tool.py backup --db-name logto --container-name my-postgres-db
+    ```
+
+2.  **本地模式 (无密码/证书认证)**:
+    ```bash
+    # 假设已配置好 ~/.pgpass 或证书，直接指定 host 和 user
+    python3 pg_diff_tool.py backup --db-name logto --local --db-url "host=127.0.0.1 user=root" --db-user root
+    ```
 
 ### 2. 升级后：对比校验 (Compare)
 
 在数据库升级完成并导入数据后，运行此命令进行校验。
 
 ```bash
-python3 pg_diff_tool.py compare --db-name <database_name> --db-url <connection_string> [--threads N]
+python3 pg_diff_tool.py compare --db-name <database_name> [OPTIONS]
 ```
 
 **参数说明**:
-*   `--snapshot-file`: (可选) 指定要对比的快照文件，默认为 `migration_snapshot.json`。
-*   `--output`: (可选) 指定输出的 Excel 报告文件名，默认为 `upgrade_diff_report.xlsx`。
-*   `--threads`: (可选) 并行扫描线程数，建议与 backup 时保持一致或根据负载调整。
+*   `--db-url`, `--threads`: 同上。
+*   `--snapshot-file`: (可选) 指定快照文件，默认为 `migration_snapshot.json`。
+*   `--output`: (可选) 指定输出的 Excel 报告文件名。
 
 **示例**:
 ```bash
-python3 pg_diff_tool.py compare --db-name logto --threads 8
+python3 pg_diff_tool.py compare --db-name logto --db-url "host=127.0.0.1 user=root"
 ```
 
 ### 3. 查看报告

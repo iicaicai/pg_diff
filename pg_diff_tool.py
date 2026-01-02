@@ -12,35 +12,33 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 
 # Default configuration based on user input
-DEFAULT_DB_URL = "postgresql://postgres:caiLL2747@127.0.0.1:5432"
+DEFAULT_DB_URL = os.getenv("PG_DB_URL", "postgresql://127.0.0.1:5432")
 DEFAULT_DB_NAME = "logto"
 SNAPSHOT_FILE = "migration_snapshot.json"
-CONTAINER_NAME = "docker-tmp-postgres-1" # Auto-detected from context, can be made arg if needed
 
 class DataVerifier:
-    def __init__(self, db_url, db_name, threads=1):
+    def __init__(self, db_url, db_name, threads=1, container_name=None, db_user="postgres", use_local=False):
         self.db_url = db_url
         self.db_name = db_name
         self.threads = threads
+        self.container_name = container_name
+        self.db_user = db_user
+        self.use_local = use_local
         self.pool = None
         self._init_pool()
 
     def _init_pool(self):
         try:
             # Construct full DSN.
-            if self.db_name and not self.db_url.endswith(f"/{self.db_name}"):
-                 if self.db_url.endswith("/"):
-                      dsn = f"{self.db_url}{self.db_name}"
-                 else:
-                      if self.db_url.count('/') < 3:
-                           dsn = f"{self.db_url}/{self.db_name}"
-                      else:
-                           dsn = self.db_url 
-            else:
-                dsn = self.db_url
+            dsn = self.db_url
             
-            if "://" not in dsn:
-                dsn = f"postgresql://{dsn}"
+            # If dsn doesn't specify dbname, append it
+            # Simple heuristic: if it looks like a URI and doesn't end with /dbname
+            if "://" in dsn:
+                 if self.db_name and not dsn.rstrip('/').endswith(f"/{self.db_name}"):
+                      dsn = f"{dsn.rstrip('/')}/{self.db_name}"
+            # Else assume it's a libpq string or user handles it. 
+            # We trust psycopg2 to handle various formats (URI or keyword=value)
 
             print(f"Initializing connection pool ({self.threads} connections) to: {self.db_name}...")
             self.pool = psycopg2.pool.ThreadedConnectionPool(
@@ -167,7 +165,7 @@ class DataVerifier:
 
     def perform_backup(self, output_file=None):
         """
-        Executes pg_dump via docker exec if local pg_dump is missing.
+        Executes pg_dump via docker exec or locally.
         """
         if not output_file:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -175,18 +173,28 @@ class DataVerifier:
         
         print(f"Starting backup for {self.db_name} to {output_file}...")
         
-        # Construct the pg_dump command
-        # Since we are likely on host and DB in container, use docker exec
-        # command: docker exec -t CONTAINER pg_dump -U user dbname > file
-        
-        # Parse user from URL is tricky without a library, assuming 'postgres' or passed in env
-        # Simpler: Use the connection string parts if possible, or just default user 'postgres'
-        # The user provided "postgres:..." so user is postgres.
-        
-        cmd = [
-            "docker", "exec", "-i", CONTAINER_NAME, 
-            "pg_dump", "-U", "postgres", self.db_name
-        ]
+        cmd = []
+        if self.use_local:
+             # Local pg_dump
+             cmd = ["pg_dump", "-U", self.db_user, self.db_name]
+             # Note: Connection params for local pg_dump are usually passed via env (PGHOST, etc.)
+             # or implicitly if running on localhost with default port.
+             # If user provided a complex DB_URL for the script, passing it to pg_dump is tricky 
+             # because pg_dump expects DSN or params. 
+             # We can try to use --dbname=DSN if supported, or just rely on user env.
+             # For simplicity, we assume if using local, user set up environment.
+             # BUT, we can pass the DSN as the dbname argument!
+             cmd = ["pg_dump", "--dbname", self.db_url] # pg_dump accepts connection string as dbname
+        else:
+             # Docker exec
+             if not self.container_name:
+                 print("Error: Container name is required for Docker mode. Use --container-name or switch to --local.")
+                 sys.exit(1)
+                 
+             cmd = [
+                "docker", "exec", "-i", self.container_name, 
+                "pg_dump", "-U", self.db_user, self.db_name
+            ]
         
         try:
             with open(output_file, 'w') as outfile:
@@ -194,8 +202,8 @@ class DataVerifier:
             print(f"Backup completed successfully: {output_file}")
         except subprocess.CalledProcessError as e:
             print(f"Error running backup: {e}")
-            print("Ensure the container is running and accessible.")
-            # Don't exit, we might still want to do the counting
+            if not self.use_local:
+                 print("Ensure the container is running and accessible.")
         except Exception as e:
             print(f"An error occurred during backup: {e}")
 
@@ -314,10 +322,15 @@ def main():
     
     # Common arguments
     parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument('--db-url', default=DEFAULT_DB_URL, help="Database connection string (base URL)")
+    parent_parser.add_argument('--db-url', default=DEFAULT_DB_URL, help="Database connection string (base URL) or DSN")
     parent_parser.add_argument('--db-name', required=True, help="Database name to process")
     parent_parser.add_argument('--threads', type=int, default=4, help="Number of threads for parallel processing (default: 4)")
     
+    # Mode selection
+    parent_parser.add_argument('--container-name', default="docker-tmp-postgres-1", help="Docker container name (default: docker-tmp-postgres-1)")
+    parent_parser.add_argument('--local', action='store_true', help="Use local pg_dump instead of Docker exec")
+    parent_parser.add_argument('--db-user', default="postgres", help="Database user for pg_dump (default: postgres)")
+
     # Backup/Pre-upgrade command
     parser_backup = subparsers.add_parser('backup', parents=[parent_parser], help="Backup data and take snapshot of row counts")
     parser_backup.add_argument('--snapshot-file', default=SNAPSHOT_FILE, help="File to save row counts")
@@ -331,7 +344,17 @@ def main():
 
     args = parser.parse_args()
     
-    verifier = DataVerifier(args.db_url, args.db_name, args.threads)
+    # If using local mode, container_name is irrelevant but we can leave it as None or ignored.
+    # If container name is default but user might want to clear it? No, arg default handles it.
+    
+    verifier = DataVerifier(
+        db_url=args.db_url, 
+        db_name=args.db_name, 
+        threads=args.threads,
+        container_name=args.container_name,
+        db_user=args.db_user,
+        use_local=args.local
+    )
     
     if args.command == 'backup':
         # 1. Physical Backup
