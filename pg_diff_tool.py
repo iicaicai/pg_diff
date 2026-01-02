@@ -385,7 +385,7 @@ def main():
     # Compare/Post-upgrade command
     parser_compare = subparsers.add_parser('compare', parents=[parent_parser], help="Compare current row counts with snapshot")
     parser_compare.add_argument('--snapshot-file', default=SNAPSHOT_FILE, help="Snapshot file to compare against")
-    parser_compare.add_argument('--output', default='upgrade_diff_report.xlsx', help="Output Excel file for report")
+    parser_compare.add_argument('--output', help="Output Excel file for report (default: upgrade_diff_report_DBNAME_TIMESTAMP.xlsx)")
 
     args = parser.parse_args()
     
@@ -412,6 +412,12 @@ def main():
         save_snapshot(snapshot_data, args.snapshot_file)
         
     elif args.command == 'compare':
+        # Determine output filename if not provided
+        output_file = args.output
+        if not output_file:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = f"upgrade_diff_report_{args.db_name}_{timestamp}.xlsx"
+
         # 1. Load previous snapshot
         print("Loading previous snapshot...")
         before_snapshot = load_snapshot(args.snapshot_file)
@@ -421,7 +427,7 @@ def main():
         after_snapshot = verifier.get_table_snapshot_data()
         
         # 3. Generate Report
-        generate_excel_report(before_snapshot, after_snapshot, args.output)
+        generate_excel_report(before_snapshot, after_snapshot, output_file)
     
     verifier.close_pool()
 
