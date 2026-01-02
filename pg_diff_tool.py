@@ -41,10 +41,12 @@ class DataVerifier:
             # We trust psycopg2 to handle various formats (URI or keyword=value)
 
             print(f"Initializing connection pool ({self.threads} connections) to: {self.db_name}...")
+            # Pass dbname explicitely to override/ensure it in case DSN lacks it (e.g. "host=... user=...")
             self.pool = psycopg2.pool.ThreadedConnectionPool(
                 minconn=1,
                 maxconn=self.threads,
-                dsn=dsn
+                dsn=dsn,
+                dbname=self.db_name
             )
             print("Connection pool initialized.")
         except Exception as e:
@@ -176,15 +178,16 @@ class DataVerifier:
         cmd = []
         if self.use_local:
              # Local pg_dump
-             cmd = ["pg_dump", "-U", self.db_user, self.db_name]
-             # Note: Connection params for local pg_dump are usually passed via env (PGHOST, etc.)
-             # or implicitly if running on localhost with default port.
-             # If user provided a complex DB_URL for the script, passing it to pg_dump is tricky 
-             # because pg_dump expects DSN or params. 
-             # We can try to use --dbname=DSN if supported, or just rely on user env.
-             # For simplicity, we assume if using local, user set up environment.
-             # BUT, we can pass the DSN as the dbname argument!
-             cmd = ["pg_dump", "--dbname", self.db_url] # pg_dump accepts connection string as dbname
+             # Construct connection string for pg_dump
+             conn_str = self.db_url
+             if "://" in conn_str:
+                 if self.db_name and not conn_str.rstrip('/').endswith(f"/{self.db_name}"):
+                      conn_str = f"{conn_str.rstrip('/')}/{self.db_name}"
+             else:
+                 # KV style: append dbname
+                 conn_str = f"{conn_str} dbname={self.db_name}"
+             
+             cmd = ["pg_dump", "--dbname", conn_str]
         else:
              # Docker exec
              if not self.container_name:
