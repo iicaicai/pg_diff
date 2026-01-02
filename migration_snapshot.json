@@ -1,6 +1,7 @@
 {
   "public.account_centers": {
     "count": 2,
+    "checksum": "2932131997909067990",
     "pks": [
       "admin",
       "default"
@@ -10,36 +11,42 @@
   },
   "public.aggregated_daily_active_users": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
   "public.application_secrets": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
   "public.application_user_consent_organizations": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
   "public.application_sign_in_experiences": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
-  "public.application_user_consent_organization_scopes": {
+  "public.application_user_consent_organization_resource_scopes": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "application_id",
     "error": null
   },
   "public.applications": {
     "count": 4,
+    "checksum": "1737034271364501051",
     "pks": [
       "admin-console",
       "kws1m8bo37hz57f6obp8x",
@@ -49,32 +56,37 @@
     "pk_col": "id",
     "error": null
   },
-  "public.application_user_consent_organization_resource_scopes": {
+  "public.application_user_consent_organization_scopes": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "application_id",
     "error": null
   },
   "public.application_user_consent_user_scopes": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "application_id",
     "error": null
   },
   "public.connectors": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
   "public.application_user_consent_resource_scopes": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "application_id",
     "error": null
   },
   "public.applications_roles": {
     "count": 3,
+    "checksum": "-8467937881727823926",
     "pks": [
       "emroh8q5stgwjs9w1vkl0",
       "erdpe1teqtgf5eg405abg",
@@ -83,51 +95,14 @@
     "pk_col": "id",
     "error": null
   },
-  "public.custom_profile_fields": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.captcha_providers": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.domains": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.custom_phrases": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.daily_token_usage": {
-    "count": 2,
-    "pks": [
-      "ocuqvdejstwoo94pdy6bd",
-      "xtjrsgwiv3kxqd0zdf7b5"
-    ],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.hooks": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
   "public.daily_active_users": {
-    "count": 7,
+    "count": 8,
+    "checksum": "-6427529461766969018",
     "pks": [
       "1l0285344r82vh881emru",
       "4q5woxq5s9uauidr6j6g6",
       "a56sx837jov0mrtw032ca",
+      "czh7hmeu73qhm3u9c03so",
       "omuieqtl0tr7lpbtcuawc",
       "op4u7mx1oxb1glmfedimz",
       "qbel4tnxxmv4wj60hest1",
@@ -136,31 +111,58 @@
     "pk_col": "id",
     "error": null
   },
-  "public.logto_configs": {
-    "count": 7,
-    "pks": [
-      "admin",
-      "admin",
-      "admin",
-      "default",
-      "default",
-      "default",
-      "default"
-    ],
+  "public.captcha_providers": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "id",
+    "error": null
+  },
+  "public.custom_phrases": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "id",
+    "error": null
+  },
+  "public.email_templates": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
+  "public.custom_profile_fields": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "id",
+    "error": null
+  },
+  "public.daily_token_usage": {
+    "count": 2,
+    "checksum": "206868688330336174",
+    "pks": [
+      "ocuqvdejstwoo94pdy6bd",
+      "xtjrsgwiv3kxqd0zdf7b5"
+    ],
+    "pk_col": "id",
+    "error": null
+  },
   "public.logs": {
-    "count": 16,
+    "count": 18,
+    "checksum": "-37709107638364300011",
     "pks": [
       "2l2c4g0s67g0f6su9l6cf",
       "39oa5hk83w10b0jh1v6pc",
       "3de5ga8689ys31me8fvvv",
       "56tam7w76aw36u2krsswv",
       "7040m1ul4uzqdodwqxo9a",
+      "bu1jgehdqszojsowf532o",
       "bwu1vjkxjgkevyg0up09p",
       "dj1554k6joue2rll6csln",
       "e5jxhelsx4ue17snghhso",
+      "eboy1ypmuh9yqio6hkno1",
       "flton9bkz2s7tzyf40rel",
       "kojujjvy4ckii46zmy9pf",
       "lh9ne7m5mzs9ssf9uh7fh",
@@ -173,40 +175,61 @@
     "pk_col": "id",
     "error": null
   },
-  "public.email_templates": {
+  "public.domains": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
-    "pk_col": "tenant_id",
+    "pk_col": "id",
     "error": null
   },
-  "public.idp_initiated_saml_sso_sessions": {
+  "public.hooks": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
-    "pk_col": "tenant_id",
+    "pk_col": "id",
     "error": null
   },
   "public.oidc_session_extensions": {
     "count": 1,
+    "checksum": "-7413343273366415997",
     "pks": [
       "admin"
     ],
     "pk_col": "tenant_id",
     "error": null
   },
-  "public.organization_invitation_role_relations": {
+  "public.idp_initiated_saml_sso_sessions": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
-  "public.one_time_tokens": {
+  "public.logto_configs": {
+    "count": 7,
+    "checksum": "-3871549518812887543",
+    "pks": [
+      "admin",
+      "admin",
+      "admin",
+      "default",
+      "default",
+      "default",
+      "default"
+    ],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_application_relations": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
-    "pk_col": "id",
+    "pk_col": "tenant_id",
     "error": null
   },
   "public.oidc_model_instances": {
-    "count": 11,
+    "count": 13,
+    "checksum": "-29619696378173922977",
     "pks": [
       "0-vLuxAf64BN5oDqtt3Qqlqtwihd18TNRIwBwDH-IWT",
       "89AaAqmURcgt-fqfaLHHlKPsREJHK-rAyLR_Xcc7yao",
@@ -215,52 +238,94 @@
       "GOO6P3P10yJ-jzfiPsg31dtA23ZZ_1ALRZFPz_ZW_6q",
       "UDUo36NlqxLAeIOAPUYgyhHg2MU5vG4wy6wsYTSaHlt",
       "XKxGccQTmoufYVe0ALSToD0GwfHoNGe57jGwbKsbcTQ",
+      "YeT99oKv1TBcJ45_H9wAW",
       "YiveoLNznMfdOIB--345fBIbbbrwBgot84wao80SOVB",
       "gorXEkb3grKHgr5w6lQt6t0gQq4LKWK7KuXr17pk_u-",
       "m2VJVfFSdu66ybiRvgA4e8sfsy3Jkzg3X_3Vt0JS9Of",
+      "wj-Hc4CvEAIMMYlaJXwdrBzXHvej2RR1PjSRhgtQlZL",
       "z8yHrNjC3t48_7B4tywYT"
     ],
     "pk_col": "id",
     "error": null
   },
-  "public.organization_jit_email_domains": {
+  "public.one_time_tokens": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
-    "pk_col": "tenant_id",
+    "pk_col": "id",
     "error": null
   },
-  "public.organization_application_relations": {
+  "public.organization_invitation_role_relations": {
     "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.organization_jit_roles": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.organization_jit_sso_connectors": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.organization_role_application_relations": {
-    "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
   "public.organization_invitations": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
+  "public.organization_jit_email_domains": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_jit_sso_connectors": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_jit_roles": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_role_application_relations": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_roles": {
+    "count": 2,
+    "checksum": "-5897361253523961002",
+    "pks": [
+      "admin",
+      "collaborator"
+    ],
+    "pk_col": "id",
+    "error": null
+  },
+  "public.organization_role_resource_scope_relations": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organization_role_user_relations": {
+    "count": 1,
+    "checksum": "-2776513838221509407",
+    "pks": [
+      "admin"
+    ],
+    "pk_col": "tenant_id",
+    "error": null
+  },
   "public.organization_role_scope_relations": {
     "count": 12,
+    "checksum": "32460410477760560158",
     "pks": [
       "admin",
       "admin",
@@ -280,6 +345,7 @@
   },
   "public.organization_scopes": {
     "count": 8,
+    "checksum": "4254864464366504124",
     "pks": [
       "delete-data",
       "invite-member",
@@ -293,45 +359,55 @@
     "pk_col": "id",
     "error": null
   },
-  "public.organization_role_resource_scope_relations": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.organization_role_user_relations": {
+  "public.organization_user_relations": {
     "count": 1,
+    "checksum": "7511970969192575327",
     "pks": [
       "admin"
     ],
     "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.organizations": {
+    "count": 2,
+    "checksum": "4915918744988072778",
+    "pks": [
+      "t-admin",
+      "t-default"
+    ],
+    "pk_col": "id",
     "error": null
   },
   "public.passcodes": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
-  "public.organization_roles": {
-    "count": 2,
+  "public.resources": {
+    "count": 5,
+    "checksum": "5992120660018489122",
     "pks": [
-      "admin",
-      "collaborator"
+      "0boft0a8o7x2adfrd35al",
+      "jez5xu5smk7389q46z9v5",
+      "kj5hs9i2nvuyv066ordx6",
+      "management-api",
+      "ncmqyudaf1ft6dh6bqy0i"
     ],
     "pk_col": "id",
     "error": null
   },
-  "public.organization_user_relations": {
-    "count": 1,
-    "pks": [
-      "admin"
-    ],
+  "public.personal_access_tokens": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
     "pk_col": "tenant_id",
     "error": null
   },
   "public.roles": {
     "count": 7,
+    "checksum": "-2704943669599582697",
     "pks": [
       "1tec3ydbzbnnrlveqe809",
       "2rtp0e4nd5n33anpvu7s7",
@@ -344,53 +420,9 @@
     "pk_col": "id",
     "error": null
   },
-  "public.organizations": {
-    "count": 2,
-    "pks": [
-      "t-admin",
-      "t-default"
-    ],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.personal_access_tokens": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.saml_application_secrets": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.resources": {
-    "count": 5,
-    "pks": [
-      "0boft0a8o7x2adfrd35al",
-      "jez5xu5smk7389q46z9v5",
-      "kj5hs9i2nvuyv066ordx6",
-      "management-api",
-      "ncmqyudaf1ft6dh6bqy0i"
-    ],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.saml_application_configs": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.secret_enterprise_sso_connector_relations": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
   "public.roles_scopes": {
     "count": 12,
+    "checksum": "-24402339183518069992",
     "pks": [
       "1vc05ptm3vwxj4rhtrund",
       "1wrr9cyyj9fkgfs06gzym",
@@ -408,8 +440,23 @@
     "pk_col": "id",
     "error": null
   },
+  "public.saml_application_sessions": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.saml_application_secrets": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
   "public.scopes": {
     "count": 12,
+    "checksum": "-8945358494731912621",
     "pks": [
       "69z8v3n9t7p9spq7wlu3u",
       "79jugv8zthjat6mkm4hl3",
@@ -427,64 +474,58 @@
     "pk_col": "id",
     "error": null
   },
+  "public.saml_application_configs": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.secret_enterprise_sso_connector_relations": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
   "public.sentinel_activities": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
-    "error": null
-  },
-  "public.saml_application_sessions": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.secret_social_connector_relations": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
-    "error": null
-  },
-  "public.sso_connector_idp_initiated_auth_configs": {
-    "count": 0,
-    "pks": [],
-    "pk_col": "tenant_id",
     "error": null
   },
   "public.secrets": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
+    "error": null
+  },
+  "public.secret_social_connector_relations": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
     "error": null
   },
   "public.service_logs": {
     "count": 0,
-    "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.subject_tokens": {
-    "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
   "public.sso_connectors": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
-  "public.systems": {
-    "count": 1,
-    "pks": [
-      "alterationState"
-    ],
-    "pk_col": "key",
-    "error": null
-  },
   "public.sign_in_experiences": {
     "count": 2,
+    "checksum": "616545615902610151",
     "pks": [
       "admin",
       "default"
@@ -492,8 +533,33 @@
     "pk_col": "tenant_id",
     "error": null
   },
+  "public.systems": {
+    "count": 2,
+    "checksum": "16170346020992155741",
+    "pks": [
+      "alterationState",
+      "test_key"
+    ],
+    "pk_col": "key",
+    "error": null
+  },
+  "public.sso_connector_idp_initiated_auth_configs": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "tenant_id",
+    "error": null
+  },
+  "public.subject_tokens": {
+    "count": 0,
+    "checksum": "0",
+    "pks": [],
+    "pk_col": "id",
+    "error": null
+  },
   "public.tenants": {
     "count": 2,
+    "checksum": "-13286631859797156897",
     "pks": [
       "admin",
       "default"
@@ -501,22 +567,16 @@
     "pk_col": "id",
     "error": null
   },
-  "public.user_sso_identities": {
+  "public.verification_records": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
-    "pk_col": "id",
-    "error": null
-  },
-  "public.users": {
-    "count": 1,
-    "pks": [
-      "ebdgzm99i2mr"
-    ],
     "pk_col": "id",
     "error": null
   },
   "public.users_roles": {
     "count": 2,
+    "checksum": "2129812047272121475",
     "pks": [
       "jvo0bkd7xbadmxxzfbjef",
       "p9pe41eqozlaa4tsj5th5"
@@ -524,14 +584,25 @@
     "pk_col": "id",
     "error": null
   },
-  "public.verification_statuses": {
+  "public.user_sso_identities": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null
   },
-  "public.verification_records": {
+  "public.users": {
+    "count": 1,
+    "checksum": "-6649525406097391557",
+    "pks": [
+      "ebdgzm99i2mr"
+    ],
+    "pk_col": "id",
+    "error": null
+  },
+  "public.verification_statuses": {
     "count": 0,
+    "checksum": "0",
     "pks": [],
     "pk_col": "id",
     "error": null

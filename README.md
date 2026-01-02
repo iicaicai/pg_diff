@@ -1,12 +1,13 @@
 # PostgreSQL Data Upgrade Verification Tool
 
-这是一个用于在 PostgreSQL 数据库大版本升级前后进行数据一致性校验的工具。它能够对数据进行备份，并对比升级前后的数据条数和主键 ID，生成详细的差异报告（Excel 格式）。
+这是一个用于在 PostgreSQL 数据库大版本升级前后进行数据一致性校验的工具。它能够对数据进行备份，并对比升级前后的数据条数、主键 ID 以及内容校验和，生成详细的差异报告（Excel 格式）。
 
 ## 功能特性
 
 *   **自动备份**: 调用 Docker 容器内的 `pg_dump` 对数据库进行物理备份。
 *   **数据快照**: 统计指定数据库中所有业务表（排除系统表）的数据行数及主键集合。
 *   **差异对比**: 对比升级前后的数据快照，快速发现数据丢失、新增或异常变化。
+*   **内容哈希校验**: 通过计算全表 checksum 检测行数不变但内容改变的情况。
 *   **多线程加速**: 支持多线程并行扫描，大幅提升大数据量、多表场景下的处理速度。
 *   **详细报告**: 生成 Excel (`.xlsx`) 格式报告，包含"概览"和"差异详情"两个 Sheet 页。
 
@@ -78,11 +79,76 @@ python3 pg_diff_tool.py compare --db-name logto --threads 8
 *   `Schema`, `Table`: 表信息
 *   `Before Count`, `After Count`: 升级前后行数
 *   `Is Change`: 是否有变化 (Y/N)
+*   `Change Type`: 变化类型简述
 
 #### Sheet 2: Diff Details (差异详情)
 仅列出有差异的表及其具体变化：
-*   `Change Type`: 变化类型（Missing IDs, Added IDs, Count Mismatch）
-*   `IDs`: 具体缺失或新增的主键 ID 列表（列表过长时会自动截断）
+*   `Change Type`: 变化类型（Missing IDs, Added IDs, Count Mismatch, Content Mismatch）
+*   `IDs/Details`: 具体缺失/新增的主键 ID 列表，或内容校验和不一致的说明
+
+### 4. 快照文件说明 (migration_snapshot.json)
+
+`migration_snapshot.json` 是 `backup` 阶段生成的中间文件，用于持久化存储数据库的"指纹"信息，以便在升级后进行比对。请勿手动修改此文件。
+
+**文件结构示例**:
+```json
+{
+  "public.users": {
+    "count": 105,                       // 数据行数
+    "checksum": "-6649525406097391557", // 全局内容校验和 (防止行数一样但内容变了)
+    "pks": ["user_01", "user_02", ...], // 主键 ID 列表 (用于精确识别哪条数据丢失/新增)
+    "pk_col": "id",                     // 主键列名
+    "error": null                       // 扫描时的错误信息 (如有)
+  },
+  ...
+}
+```
+
+## 实现原理
+
+### 工作流程图
+
+```mermaid
+graph TD
+    A[用户指令] --> B{选择模式}
+    
+    subgraph "Backup (升级前)"
+    B -- Backup --> C[物理备份 (pg_dump)]
+    C --> D[初始化连接池]
+    D --> E[获取表清单]
+    E --> F[多线程并行扫描]
+    F --> G[统计行数 & 获取主键集合]
+    G --> H[生成快照 JSON]
+    end
+    
+    subgraph "Compare (升级后)"
+    B -- Compare --> I[加载旧快照 JSON]
+    I --> J[初始化连接池]
+    J --> K[多线程并行扫描当前库]
+    K --> L[统计行数 & 获取主键集合]
+    L --> M[对比新旧数据]
+    M --> N[计算差异 (新增/缺失 ID)]
+    N --> O[生成 Excel 报告]
+    end
+```
+
+### 核心机制
+
+1.  **多线程并行扫描**: 
+    *   工具使用 `ThreadPoolExecutor` 创建线程池，配合 `psycopg2.pool.ThreadedConnectionPool` 管理数据库连接。
+    *   主线程获取所有业务表清单后，将任务分发给子线程。每个子线程负责一张表的 `COUNT(*)` 和 `SELECT PrimaryKey` 查询，极大提高了对海量表的扫描效率。
+
+2.  **主键指纹对比**:
+    *   为了不仅知道"数据量变了"，还能知道"哪条数据变了"，工具会提取每张表的主键值（IDs）。
+    *   通过 Python 的集合（Set）运算（`Old_IDs - New_IDs` 和 `New_IDs - Old_IDs`），快速计算出缺失（Missing）和新增（Added）的具体记录 ID。
+
+3.  **内容哈希校验 (Content Checksum)**:
+    *   为了防止"行数一样、主键一样，但内容变了"的场景，工具对每张表计算一个全局内容校验和。
+    *   **算法**: `SUM( ('x' || SUBSTR(MD5(row::text), 1, 16))::bit(64)::bigint )`
+    *   即：对每行数据转换为文本后计算 MD5，取前 64 位作为整数，然后对全表求和。该算法与行顺序无关，能高效、准确地检测数据内容变化。
+
+4.  **容器化兼容**:
+    *   针对运行在 Docker 容器中的数据库，工具通过 `docker exec` 通道直接调用容器内部的原生 `pg_dump` 工具，无需在宿主机安装特定版本的 PostgreSQL 客户端，保证了备份工具版本与数据库版本的严格一致。
 
 ## 常见问题
 

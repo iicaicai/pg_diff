@@ -85,6 +85,7 @@ class DataVerifier:
         key = f"{schema}.{table}"
         result_data = {
             "count": 0,
+            "checksum": 0,
             "pks": [],
             "pk_col": None,
             "error": None
@@ -94,10 +95,21 @@ class DataVerifier:
         try:
             conn = self.pool.getconn()
             with conn.cursor() as cursor:
-                # Get Count
-                cursor.execute(f"SELECT COUNT(*) FROM {full_name}")
-                count = cursor.fetchone()[0]
-                result_data["count"] = count
+                # Get Count and Checksum (Content Hash)
+                # Checksum logic: Sum of 64-bit prefixes of row MD5s. Order-independent.
+                # Cast to bigint to avoid overflow issues with simple integer, though sum might still be large.
+                # Actually, bigint sum wrap-around is fine for checksum purposes, but PG sum() on bigint might error on overflow?
+                # PG sum(bigint) returns numeric, so no overflow. We can store it as string or large int.
+                query_stats = f"""
+                    SELECT 
+                        COUNT(*),
+                        COALESCE(SUM(('x' || substr(md5(t::text), 1, 16))::bit(64)::bigint), 0)
+                    FROM {full_name} t
+                """
+                cursor.execute(query_stats)
+                row = cursor.fetchone()
+                result_data["count"] = row[0]
+                result_data["checksum"] = str(row[1]) # Store as string to preserve precision in JSON
 
                 # Get PKs
                 pk_col = self.get_primary_key_column(conn, schema, table)
@@ -208,7 +220,7 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
     # Sheet 1: Summary
     ws_summary = wb.active
     ws_summary.title = "Summary"
-    ws_summary.append(['Schema', 'Table', 'Before Count', 'After Count', 'Is Change'])
+    ws_summary.append(['Schema', 'Table', 'Before Count', 'After Count', 'Is Change', 'Change Type'])
     
     # Style header
     header_font = Font(bold=True)
@@ -219,7 +231,7 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
 
     # Sheet 2: Diff Details
     ws_details = wb.create_sheet(title="Diff Details")
-    ws_details.append(['Schema', 'Table', 'Change Type', 'IDs'])
+    ws_details.append(['Schema', 'Table', 'Change Type', 'IDs/Details'])
     for cell in ws_details[1]:
         cell.font = header_font
         cell.fill = header_fill
@@ -232,9 +244,9 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
         
         # Helper
         def get_data(snapshot, k):
-            val = snapshot.get(k, {'count': 0, 'pks': []})
+            val = snapshot.get(k, {'count': 0, 'checksum': '0', 'pks': []})
             if isinstance(val, int): 
-                return {'count': val, 'pks': []}
+                return {'count': val, 'checksum': '0', 'pks': []}
             return val
 
         data_before = get_data(before_snapshot, key)
@@ -242,6 +254,9 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
         
         count_before = data_before['count']
         count_after = data_after['count']
+        
+        checksum_before = str(data_before.get('checksum', '0'))
+        checksum_after = str(data_after.get('checksum', '0'))
         
         pks_before = set(data_before.get('pks', []))
         pks_after = set(data_after.get('pks', []))
@@ -251,7 +266,19 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
         added_pks = pks_after - pks_before
         
         is_change = 'N'
-        if count_before != count_after or missing_pks or added_pks:
+        change_type = []
+        
+        if count_before != count_after:
+            change_type.append("Count Mismatch")
+        
+        if missing_pks or added_pks:
+             # Already covered by ID check, but just to be sure
+             pass
+             
+        if count_before == count_after and checksum_before != checksum_after and not missing_pks and not added_pks:
+            change_type.append("Content Mismatch")
+        
+        if count_before != count_after or missing_pks or added_pks or checksum_before != checksum_after:
             is_change = 'Y'
             
             # Add to Details Sheet
@@ -261,17 +288,22 @@ def generate_excel_report(before_snapshot, after_snapshot, output_file):
                 msg = ", ".join(missing_list)
                 if len(msg) > 32000: msg = msg[:32000] + "...(truncated)"
                 ws_details.append([schema, table, 'Missing IDs', msg])
+                change_type.append("Missing IDs")
                 
             if added_pks:
                 added_list = sorted(list(added_pks))
                 msg = ", ".join(added_list)
                 if len(msg) > 32000: msg = msg[:32000] + "...(truncated)"
                 ws_details.append([schema, table, 'Added IDs', msg])
+                change_type.append("Added IDs")
             
             if not missing_pks and not added_pks and count_before != count_after:
                  ws_details.append([schema, table, 'Count Mismatch', 'No PK differences found (possibly duplicate PKs or no PK)'])
+                 
+            if not missing_pks and not added_pks and count_before == count_after and checksum_before != checksum_after:
+                 ws_details.append([schema, table, 'Content Mismatch', f'Row count identical ({count_before}), but content checksum differs.'])
 
-        ws_summary.append([schema, table, count_before, count_after, is_change])
+        ws_summary.append([schema, table, count_before, count_after, is_change, ", ".join(set(change_type))])
 
     wb.save(output_file)
     print(f"Comparison report generated: {output_file}")
