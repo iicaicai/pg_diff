@@ -200,15 +200,46 @@ class DataVerifier:
             ]
         
         try:
+            # Pre-flight check: verify tool existence without creating file
+            # For docker: docker exec container pg_dump --version
+            # For local: pg_dump --version
+            check_cmd = cmd[:-2] + ["--version"] if not self.use_local else ["pg_dump", "--version"]
+            try:
+                subprocess.check_call(check_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                # If version check fails, likely the tool is missing or container is down.
+                # We raise specific error to be caught below, avoiding empty file creation.
+                if self.use_local:
+                     raise FileNotFoundError("pg_dump not found locally")
+                else:
+                     raise RuntimeError("Docker command failed or container inaccessible")
+
+            # When using docker exec, we pipe stdout to the file on host.
+            # subprocess.check_call(cmd, stdout=outfile) handles this perfectly.
+            # This works regardless of volumes, as the output stream is captured by python on host.
             with open(output_file, 'w') as outfile:
                 subprocess.check_call(cmd, stdout=outfile)
             print(f"Backup completed successfully: {output_file}")
-        except subprocess.CalledProcessError as e:
-            print(f"Error running backup: {e}")
-            if not self.use_local:
-                 print("Ensure the container is running and accessible.")
+            
         except Exception as e:
-            print(f"An error occurred during backup: {e}")
+            # Cleanup: If file was created but backup failed (size 0 or partial), remove it.
+            if os.path.exists(output_file):
+                os.remove(output_file)
+                
+            # Error handling
+            if isinstance(e, subprocess.CalledProcessError):
+                print(f"Error running backup: {e}")
+                if not self.use_local:
+                     print("Ensure the container is running and accessible.")
+            elif isinstance(e, FileNotFoundError) or str(e) == "pg_dump not found locally":
+                 if self.use_local:
+                     print("Error: 'pg_dump' command not found. Please install PostgreSQL client tools or use --container-name to run via Docker.")
+                 else:
+                     print("Error: 'docker' command not found.")
+            elif str(e) == "Docker command failed or container inaccessible":
+                 print("Error: Unable to run pg_dump inside Docker. Check if container is running.")
+            else:
+                print(f"An error occurred during backup: {e}")
 
 def save_snapshot(data, filename):
     with open(filename, 'w') as f:
