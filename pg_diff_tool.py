@@ -175,28 +175,34 @@ class DataVerifier:
         
         print(f"Starting backup for {self.db_name} to {output_file}...")
         
+        # Construct connection string for pg_dump (Common for both Local and Docker)
+        # We want to use the user-provided DB_URL (which might contain host/port/user)
+        # and ensure dbname is attached.
+        conn_str = self.db_url
+        if "://" in conn_str:
+             if self.db_name and not conn_str.rstrip('/').endswith(f"/{self.db_name}"):
+                  conn_str = f"{conn_str.rstrip('/')}/{self.db_name}"
+        else:
+             # KV style: append dbname if not present (simple check)
+             if f"dbname={self.db_name}" not in conn_str and f"dbname =" not in conn_str:
+                  conn_str = f"{conn_str} dbname={self.db_name}"
+        
         cmd = []
         if self.use_local:
              # Local pg_dump
-             # Construct connection string for pg_dump
-             conn_str = self.db_url
-             if "://" in conn_str:
-                 if self.db_name and not conn_str.rstrip('/').endswith(f"/{self.db_name}"):
-                      conn_str = f"{conn_str.rstrip('/')}/{self.db_name}"
-             else:
-                 # KV style: append dbname
-                 conn_str = f"{conn_str} dbname={self.db_name}"
-             
-             cmd = ["pg_dump", "--dbname", conn_str]
+             cmd = ["pg_dump", "--dbname", conn_str, "--no-password"]
         else:
              # Docker exec
              if not self.container_name:
                  print("Error: Container name is required for Docker mode. Use --container-name or switch to --local.")
                  sys.exit(1)
-                 
+             
+             # Use the same connection string inside Docker.
+             # This allows "host=127.0.0.1" to force TCP connection inside container,
+             # bypassing the Unix socket default which caused auth issues.
              cmd = [
                 "docker", "exec", "-i", self.container_name, 
-                "pg_dump", "-U", self.db_user, self.db_name
+                "pg_dump", "--dbname", conn_str, "--no-password"
             ]
         
         try:
